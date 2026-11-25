@@ -65,7 +65,7 @@ sudo apt install ./release/Ouricinho-1.0.0-amd64.deb
 
 ### Running as root / with sudo
 
-Do **not** use `sudo` for normal play — Electron/Chromium disables its sandbox when running as root and root cannot use your desktop session's X authority or GPU libraries. If you do run `sudo ./run.sh`, the script detects `EUID=0`, recovers `SUDO_USER` plus `DISPLAY`, `XAUTHORITY`, `DBUS_SESSION_BUS_ADDRESS` and `XDG_RUNTIME_DIR` from sudo's parent process, then drops privileges back to you and launches Electron with the sandbox intact:
+Do **not** use `sudo` for normal play — Electron/Chromium disables its sandbox when running as root and root cannot use your desktop session's X authority or GPU libraries. If you do run `sudo ./run.sh`, the script detects `EUID=0`, fixes Electron's SUID sandbox helper (`chrome-sandbox` → `root:root`, mode `4755`), recovers `SUDO_USER` plus `DISPLAY`, `XAUTHORITY`, `DBUS_SESSION_BUS_ADDRESS` and `XDG_RUNTIME_DIR` from sudo's parent process, then drops privileges back to you and launches Electron with the sandbox intact:
 
 ```bash
 sudo ./run.sh   # now re-executes as your normal user
@@ -79,6 +79,15 @@ Root detected via sudo — dropping back to lucas-soares with your desktop sessi
 ```
 
 Only when there is no `SUDO_USER` (plain root shell or container) does it fall back to `--no-sandbox --disable-gpu-sandbox` with a warning.
+
+If you see `The SUID sandbox helper binary was found, but is not configured correctly` when launching as a normal user, fix it once with:
+
+```bash
+sudo chown root:root node_modules/electron/dist/chrome-sandbox
+sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
+```
+
+Note: `npm install` resets these permissions, so re-apply after reinstalling dependencies. `sudo ./run.sh` does it automatically.
 
 The packaged AppImage has no privilege-dropping wrapper, so run it as your normal user. If you absolutely must run it as root, use:
 

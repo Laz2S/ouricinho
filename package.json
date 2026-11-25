@@ -1,0 +1,40 @@
+{
+  "name": "ouricinho",
+  "version": "1.0.0",
+  "description": "Ouricinho - a cozy autonomous 3D virtual hedgehog for desktop",
+  "main": "dist-electron/main.js",
+  "homepage": "https://ouricinho.app",
+  "author": {
+    "name": "Ouricinho Studio",
+    "email": "hello@ouricinho.app"
+  },
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "build": "npm run typecheck && vite build && npm run build:electron",
+    "build:exe": "npm run build && electron-builder --win --x64 --config electron-builder.yml",
+    "build:linux": "npm run build && electron-builder --linux --x64 --config electron-builder.yml",
+    "build:appimage": "npm run build && electron-builder --linux AppImage --x64 --config electron-builder.yml",
+    "build:deb": "npm run build && electron-builder --linux deb --x64 --config electron-builder.yml",
+    "preview": "vite preview",
+    "dev:electron": "npm run build:electron && concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron dist-electron/main.js\"",
+    "start:electron": "npm run build && electron dist-electron/main.js"
+  },
+  "dependencies": {
+    "three": "^0.169.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "@types/three": "^0.169.0",
+    "concurrently": "^9.0.1",
+    "cross-env": "^7.0.3",
+    "electron": "^32.1.2",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "wait-on": "^8.0.1"
+  }
+}
