@@ -20,6 +20,8 @@ Open `http://127.0.0.1:5173`.
 | `npm run start-linux` | **Linux**: runs `init` (install + build + package Windows/Linux + sandbox fix), then launches with `./run.sh`. |
 | `npm run start-windows` | **Windows**: installs, builds, creates `release/Ouricinho-Portable-1.0.0.exe`, then launches it. On Linux it still builds the `.exe` but prints its path instead of trying to run it. |
 | `npm run init` | One-shot setup only: installs deps, builds, packages Windows + Linux, and configures the Electron sandbox helper. Does not launch. |
+| `npm run release` | Builds everything, then creates `release-bundle/` containing only end-user binaries, checksums and run instructions. |
+| `npm run release:no-build` | Same as `release`, but reuses artifacts already in `release/`. |
 | `npm install` | Installs all dependencies (offline after the first install). |
 | `npm run dev` | Starts the Vite development server. |
 | `npm run typecheck` | Typechecks renderer, Vite config and Electron main process. |
@@ -74,6 +76,36 @@ release/Ouricinho-Portable-1.0.0.exe
 ```
 
 There is no separate builder or launcher `.exe` — double-click that file to play. On Linux, use `npm start` or `./run.sh`; `build.sh` is the Linux build script.
+
+## Shareable release (no Node, npm, Git or source needed)
+
+Build a ready-to-upload folder:
+
+```bash
+npm run release
+```
+
+or reuse what is already built:
+
+```bash
+npm run release:no-build
+```
+
+This creates `release-bundle/` with **only** end-user files:
+
+```text
+release-bundle/
+├── Ouricinho-Portable-1.0.0.exe        # Windows: double-click
+├── Ouricinho-1.0.0-x86_64.AppImage     # Linux portable (needs FUSE/libfuse2)
+├── Ouricinho-1.0.0-linux-x64.tar.gz    # Linux fallback, no FUSE needed
+├── Ouricinho-1.0.0-amd64.deb           # Debian/Ubuntu install
+├── HOW_TO_RUN.txt
+└── SHA256SUMS
+```
+
+Upload the contents of `release-bundle/` to a GitHub Release. End users do **not** need Node, npm, Git, `build.sh`, `run.sh`, `init.sh`, `node_modules/` or this repository.
+
+`.sh` files are developer helpers only. They need bash, npm and the source project. The standalone files are the `.exe`, `.AppImage`, `.tar.gz` and `.deb`.
 
 ## Linux build
 
@@ -170,6 +202,7 @@ You never control the hedgehog directly. Your role is to provide gentle environm
 ouricinho/
 ├── build.sh
 ├── init.sh
+├── release.sh
 ├── run.sh
 ├── electron-builder.yml
 ├── electron/
