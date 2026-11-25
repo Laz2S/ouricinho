@@ -16,6 +16,10 @@ Open `http://127.0.0.1:5173`.
 
 | Command | What it does |
 | --- | --- |
+| `npm start` | Detects your OS and runs the matching prepare + play command below. |
+| `npm run start-linux` | **Linux**: runs `init` (install + build + package Windows/Linux + sandbox fix), then launches with `./run.sh`. |
+| `npm run start-windows` | **Windows**: installs, builds, creates `release/Ouricinho-Portable-1.0.0.exe`, then launches it. On Linux it still builds the `.exe` but prints its path instead of trying to run it. |
+| `npm run init` | One-shot setup only: installs deps, builds, packages Windows + Linux, and configures the Electron sandbox helper. Does not launch. |
 | `npm install` | Installs all dependencies (offline after the first install). |
 | `npm run dev` | Starts the Vite development server. |
 | `npm run typecheck` | Typechecks renderer, Vite config and Electron main process. |
@@ -32,10 +36,49 @@ Open `http://127.0.0.1:5173`.
 | `./build.sh dir` | Shell build script, unpacked `linux-unpacked` folder only. |
 | `./run.sh` | Builds if needed, then launches the app. If run via `sudo`, it drops back to the invoking user with their desktop session. |
 
+## One command to prepare + play
+
+```bash
+npm start                 # auto-detects Linux vs Windows
+npm run start-linux       # explicit Linux command
+npm run start-windows     # explicit Windows command
+```
+
+`npm start` picks the right platform automatically. Use the explicit commands if you want to be certain which path runs. If you only want to prepare without launching, use `npm run init`.
+
+`npm run start-windows` on Windows avoids `bash` entirely: it runs `npm install`, `npm run build`, `npm run build:exe`, then starts `release/Ouricinho-Portable-1.0.0.exe`. On Linux, the same command builds the `.exe` but cannot execute it; the path is printed instead.
+
+`npm run init` / `npm start` do:
+
+1. Make `build.sh`, `run.sh` and `init.sh` executable
+2. Run `npm install`
+3. Build the renderer + Electron sources
+4. Package the Windows `.exe`, Linux AppImage and `.deb`
+5. Configure `chrome-sandbox` as `root:root` / `4755` (sudo may prompt once)
+6. `npm start` then launches the app via `./run.sh`
+
+After `npm run init`, launch manually with:
+
+```bash
+./run.sh
+```
+
+…or copy/run `release/Ouricinho-Portable-1.0.0.exe` on Windows.
+
+### Where are `build.exe` and `run.exe`?
+
+They do not exist. On Windows the generated portable file **is** the runnable app:
+
+```text
+release/Ouricinho-Portable-1.0.0.exe
+```
+
+There is no separate builder or launcher `.exe` — double-click that file to play. On Linux, use `npm start` or `./run.sh`; `build.sh` is the Linux build script.
+
 ## Linux build
 
 ```bash
-chmod +x build.sh run.sh   # only needed once after copying files
+chmod +x build.sh run.sh init.sh   # only needed once after copying files
 ./build.sh                 # AppImage + .deb
 ./build.sh appimage        # just the portable AppImage
 ./build.sh deb             # just the Debian/Ubuntu package
@@ -126,6 +169,7 @@ You never control the hedgehog directly. Your role is to provide gentle environm
 ```text
 ouricinho/
 ├── build.sh
+├── init.sh
 ├── run.sh
 ├── electron-builder.yml
 ├── electron/
@@ -133,6 +177,8 @@ ouricinho/
 │   └── preload.ts
 ├── index.html
 ├── package.json
+├── scripts/
+│   └── start.js
 ├── tsconfig.electron.json
 ├── tsconfig.json
 ├── tsconfig.node.json

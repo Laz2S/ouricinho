@@ -11,6 +11,10 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "init": "bash init.sh",
+    "start": "node scripts/start.js auto",
+    "start-linux": "node scripts/start.js linux",
+    "start-windows": "node scripts/start.js windows",
     "dev": "vite",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "build:electron": "tsc -p tsconfig.electron.json",
